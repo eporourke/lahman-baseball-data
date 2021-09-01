@@ -5,21 +5,25 @@ SELECT * FROM teams
 
 SELECT 
 name,
+yearid,
 SUM(w) AS wins
 FROM teams
 WHERE yearid BETWEEN 1970 AND 2016
 AND wswin <> 'Y'
-GROUP BY name
+GROUP BY name, yearid
 ORDER BY wins DESC
 
 SELECT 
 name,
+yearid,
 SUM(w) AS wins
 FROM teams
 WHERE yearid BETWEEN 1970 AND 2016
 AND wswin = 'Y'
-GROUP BY name
+GROUP BY name, yearid
 ORDER BY wins DESC
+
+
 
 -- 6. Find the player who had the most success stealing bases in 2016, where success is measured as the percentage of stolen base attempts which are successful. (A stolen base attempt results either in a stolen base or being caught stealing.) Consider only players who attempted at least 20 stolen bases.
 
@@ -53,9 +57,12 @@ ORDER BY decade
 
 SELECT
 	position,
-	SUM(f.po)
+	SUM(f.po),
+	FROM
+	-- fix subquery
 	(SELECT
-		CASE
+		f.po,
+	 	CASE
 			WHEN f.pos = 'OF' THEN 'Outfield'
 			WHEN f.pos = 'SS' THEN 'Infield'
 			WHEN f.pos = '1B' THEN 'Infield'
@@ -63,11 +70,10 @@ SELECT
 			WHEN f.pos = '3B' THEN 'Infield'
 			WHEN f.pos = 'P' THEN 'Battery'
 			WHEN f.pos = 'C' THEN 'Battery'
-			END AS position,
-		f.po)
-		FROM people AS p
+			END AS position) people AS p
 LEFT JOIN fielding AS f
 ON p.playerid = f.playerid
+WHERE yearid = '2016'
 GROUP BY position
 
 SELECT * FROM fielding
@@ -75,23 +81,22 @@ SELECT * FROM fielding
 -- 3. Find all the players in the database who played at Vanderbilt University. Create a list showing each player's first and last names as well as the total salary they earned in the major leagues. Sort this list in descending order by the total salary earned. Which Vanderbilt player earned the most money in the majors?
 
 SELECT
-	p.namefirst,
-	p.namelast,
-	s.salary
+	p.namegiven,
+	SUM(s.salary)
 FROM people AS p
-LEFT JOIN collegeplaying AS cp
+INNER JOIN collegeplaying AS cp
 	ON p.playerid = cp.playerid
-LEFT JOIN salaries AS s
+INNER JOIN salaries AS s
 	ON p.playerid=s.playerid
 WHERE schoolid = 'vandy'
-ORDER BY s.salary DESC ;
+GROUP BY p.namegiven
+ORDER BY s.salary DESC;
 
-SELECT * FROM salaries
+SELECT * FROM people
 
 -- 2. Find the name and height of the shortest player in the database. How many games did he play in? What is the name of the team for which he played in?
 
-select p.namefirst,
-p.namelast,
+select p.namegiven,
 t.name,
 t.g,
 p.height
