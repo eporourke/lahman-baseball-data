@@ -57,42 +57,45 @@ ORDER BY decade
 
 SELECT
 	position,
-	SUM(f.po),
+	SUM(po) AS put_outs
 	FROM
-	-- fix subquery
 	(SELECT
-		f.po,
+		yearid,
+	 	po,
 	 	CASE
-			WHEN f.pos = 'OF' THEN 'Outfield'
-			WHEN f.pos = 'SS' THEN 'Infield'
-			WHEN f.pos = '1B' THEN 'Infield'
-			WHEN f.pos = '2B' THEN 'Infield'
-			WHEN f.pos = '3B' THEN 'Infield'
-			WHEN f.pos = 'P' THEN 'Battery'
-			WHEN f.pos = 'C' THEN 'Battery'
-			END AS position) people AS p
-LEFT JOIN fielding AS f
-ON p.playerid = f.playerid
-WHERE yearid = '2016'
+			WHEN pos = 'OF' THEN 'Outfield'
+			WHEN pos = 'SS' THEN 'Infield'
+			WHEN pos = '1B' THEN 'Infield'
+			WHEN pos = '2B' THEN 'Infield'
+			WHEN pos = '3B' THEN 'Infield'
+			WHEN pos = 'P' THEN 'Battery'
+			WHEN pos = 'C' THEN 'Battery'
+			END AS position
+			FROM fielding) AS f
+--LEFT JOIN people AS p
+--ON f.playerid = p.playerid
+WHERE yearid = 2016
 GROUP BY position
+ORDER BY put_outs DESC;
 
 SELECT * FROM fielding
 
 -- 3. Find all the players in the database who played at Vanderbilt University. Create a list showing each player's first and last names as well as the total salary they earned in the major leagues. Sort this list in descending order by the total salary earned. Which Vanderbilt player earned the most money in the majors?
 
 SELECT
-	p.namegiven,
-	SUM(s.salary)
+	p.namefirst,
+	p.namelast,
+	SUM(s.salary) AS total_salary
 FROM people AS p
 INNER JOIN collegeplaying AS cp
 	ON p.playerid = cp.playerid
 INNER JOIN salaries AS s
 	ON p.playerid=s.playerid
 WHERE schoolid = 'vandy'
-GROUP BY p.namegiven
-ORDER BY s.salary DESC;
+GROUP BY p.namelast, p.namefirst
+ORDER BY total_salary DESC;
 
-SELECT * FROM people
+-- The person who made the most and played in the Vanderbilt baseball team is David Price.
 
 -- 2. Find the name and height of the shortest player in the database. How many games did he play in? What is the name of the team for which he played in?
 
