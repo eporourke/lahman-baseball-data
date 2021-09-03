@@ -77,6 +77,8 @@ ORDER BY avg_attendance
 LIMIT 5;
 
 -- 7. From 1970 – 2016, what is the largest number of wins for a team that did not win the world series? What is the smallest number of wins for a team that did win the world series? Doing this will probably result in an unusually small number of wins for a world series champion – determine why this is the case. Then redo your query, excluding the problem year. How often from 1970 – 2016 was it the case that a team with the most wins also won the world series? What percentage of the time?
+
+--think in terms of what is in the numerator and what is in the denominator when calculating a metric - it's talking about a team with the most wins(denominator) - only them, then the number that have world series wins - numerator
 SELECT * FROM teams
 
 SELECT 
@@ -87,7 +89,7 @@ FROM teams
 WHERE yearid BETWEEN 1970 AND 2016
 AND wswin <> 'Y'
 GROUP BY name, yearid
-ORDER BY wins DESC
+ORDER BY wins
 
 SELECT 
 name,
@@ -97,8 +99,27 @@ FROM teams
 WHERE yearid BETWEEN 1970 AND 2016
 AND wswin = 'Y'
 GROUP BY name, yearid
-ORDER BY wins DESC
+ORDER BY wins
 
+SELECT
+name,
+yearid,
+w,
+wswin
+FROM teams
+WHERE yearid BETWEEN 1970 AND 2016
+ORDER BY w
+
+SELECT 
+name,
+yearid,
+SUM(w) AS wins
+FROM teams
+WHERE yearid > 1969
+AND yearid <> 1994
+AND wswin = 'Y'
+GROUP BY name, yearid
+ORDER BY wins DESC
 
 
 -- 6. Find the player who had the most success stealing bases in 2016, where success is measured as the percentage of stolen base attempts which are successful. (A stolen base attempt results either in a stolen base or being caught stealing.) Consider only players who attempted at least 20 stolen bases.
@@ -161,7 +182,7 @@ SELECT * FROM fielding
 SELECT
 	p.namefirst,
 	p.namelast,
-	SUM(s.salary) AS total_salary
+	SUM(DISTINCT s.salary::text::money) AS total_salary
 FROM people AS p
 INNER JOIN collegeplaying AS cp
 	ON p.playerid = cp.playerid
@@ -175,10 +196,12 @@ ORDER BY total_salary DESC;
 
 -- 2. Find the name and height of the shortest player in the database. How many games did he play in? What is the name of the team for which he played in?
 
-select p.namegiven,
-t.name,
-t.g,
-p.height
+SELECT
+	p.namefirst,
+	p.namelast,
+	t.name,
+	a.g_all,
+	p.height
 FROM people AS p
 LEFT JOIN appearances AS a
 ON p.playerid = a.playerid
@@ -187,7 +210,7 @@ ON a.teamid = t.teamid and a.yearid=t.yearid
 ORDER BY p.height
 
 SELECT *
-FROM teams
+FROM appearances
 
 -- Eddie Gaedel is 43 inches in height, and played 154 games for the St. Louis Browns
 
